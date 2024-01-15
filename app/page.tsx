@@ -33,28 +33,22 @@ export default function Home() {
   const [pageNumber, setPageNumber] = useState(1); // the current page number
   const [pageSize] = useState(10); // the number of items to be displayed per page
 
-  /* 
-    TODO: Get the category and search query from the URL.
-  */
-  const categoryParam = null; // PLACEHOLDER
-  const searchParam = null; // PLACEHOLDER
+  const urlParams = useSearchParams();
+  const categoryParam = urlParams.get("category");
+  const searchParam = urlParams.get("search");
 
   /* 
     On page load, set the category and search query based on the URL.
   */
   useEffect(() => {
-    /* 
-      TODO: If the category param is set, set the category state variable to the corresponding category.
-      Otherwise, leave the category state variable as null.
-      HINT: Use the valueToCategory function to convert the category param to a Category object.
-    */
+    if (categoryParam) {
+      setCategory(valueToCategory(categoryParam));
+    }
 
-    /* 
-      TODO: If the search param is set, set the search state variable to the corresponding search query.
-      Otherwise, leave the search state variable as an empty string.
-    */
-    
-  }, []);
+    if (searchParam) {
+      setSearch(searchParam);
+    }
+  }, [categoryParam, searchParam]);
 
   /* 
     Whenever the category, search query, or sorting method changes, update the list of items to be
@@ -70,19 +64,18 @@ export default function Home() {
     if (searchParam && !search) {
       return;
     }
-    
-    /*
-      TODO: Set the isLoading state variable to true.
-    */
 
-    /* 
-      TODO: Get the items from the database with the correct filters and sorting method. Then, update
-      the items state variable and set the isLoading state variable to false.
+    setIsLoading(true);
 
-      HINT: Filter for only listed items as well. 
-    */
-    
-  }, [sorting, category, search]);
+    getItems({
+      category: category ? category.value : undefined,
+      search,
+      sort: sorting ? sorting.value : undefined,
+    }).then((fetchedItems) => {
+      setItems(fetchedItems);
+      setIsLoading(false);
+    });
+  }, [sorting, category, search, categoryParam, searchParam]);
 
   return (
     <div className="bg-[#f4f7f7] flex flex-col gap-4 items-center py-4 ">

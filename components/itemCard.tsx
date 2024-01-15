@@ -34,73 +34,83 @@ export default function ItemCard({ itemId }: { itemId: string }) {
     On page load, get the current item and user.
   */
   useEffect(() => {
-    /* 
-      TODO: Get the current item and user, and if the user is logged in, check if the item is on the 
-      user's watch list. Update the item, user, and isWatched states.
-    */
-    
+    // Get the current ite
+    getItemById(itemId).then((fetchedItem) => {
+      setItem(fetchedItem);
+    });
+
+    if (session && session.user?.name) {
+      // get the current user
+      getUser(session.user.name).then((fetchedUser) => {
+        setUser(fetchedUser);
+
+        // check if the item is on the user's watch listÏ
+        isUserWatchingItem(fetchedUser.username, itemId).then((watching) => {
+          setIsWatched(watching);
+        });
+      });
+    }
   }, [itemId, session]);
 
   /* 
     If the item is null, return an empty fragment (`<></>`).
   */
 
-  /* 
-    TODO: Otherwise, return the following UI: 
-    ```
-    <a href={`/item/${item.owner}/${item.id}`}>
-      <Card className="hover:scale-105 transform transition duration-300 ">
-        <CardHeader className="px-0 py-0">
-          <CardTitle>
-            {" "}
-            <Image
-              src={item.image}
-              alt={item.title}
-              className="rounded-t-md object-cover w-[240px] h-[240px]"
-              width={240}
-              height={240}
-            />
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-4">
-          <div className="hover:underline text-blue-500 font-medium hover:cursor-pointer text-sm">
-            {item.title}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <div className="w-full flex flex-row justify-between items-center gap-2">
-            <p className="text-xl font-medium">${item.price}</p>
-            {isWatched ? (
-              <Star
-                className="text-blue-500"
-                size={24}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  if (user !== null) {
-                    await removeItemFromWatchList(user.username, item.id);
-                    setIsWatched(false);
-                  }
-                }}
+  if (item) {
+    return (
+      <a href={`/item/${item.owner}/${item.id}`}>
+        <Card className="hover:scale-105 transform transition duration-300 ">
+          <CardHeader className="px-0 py-0">
+            <CardTitle>
+              {" "}
+              <Image
+                src={item.image}
+                alt={item.title}
+                className="rounded-t-md object-cover w-[240px] h-[240px]"
+                width={240}
+                height={240}
               />
-            ) : (
-              <Star
-                className="text-gray-500"
-                size={24}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  if (user !== null) {
-                    await addItemToWatchList(user.username, item.id);
-                    setIsWatched(true);
-                  }
-                }}
-              />
-            )}
-          </div>
-        </CardFooter>
-      </Card>
-    </a>
-    ```
-  */
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-4">
+            <div className="hover:underline text-blue-500 font-medium hover:cursor-pointer text-sm">
+              {item.title}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <div className="w-full flex flex-row justify-between items-center gap-2">
+              <p className="text-xl font-medium">${item.price}</p>
+              {isWatched ? (
+                <Star
+                  className="text-blue-500"
+                  size={24}
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    if (user !== null) {
+                      await removeItemFromWatchList(user.username, item.id);
+                      setIsWatched(false);
+                    }
+                  }}
+                />
+              ) : (
+                <Star
+                  className="text-gray-500"
+                  size={24}
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    if (user !== null) {
+                      await addItemToWatchList(user.username, item.id);
+                      setIsWatched(true);
+                    }
+                  }}
+                />
+              )}
+            </div>
+          </CardFooter>
+        </Card>
+      </a>
+    );
+  }
 
   return <></>; // PLACEHOLDER
 }

@@ -42,60 +42,56 @@ export default function CreateListingModal() {
   const [loading, setLoading] = useState<boolean>(false); // Whether the submission is loading
   const [success, setSuccess] = useState<boolean>(false); // Whether the listing was successfully created
   const [error, setError] = useState<boolean>(false); // Whether there was an error creating the listing
-
   const { data: session, status } = useSession(); // The current session
-  
+
   /* 
     On page load, get the current user.
   */
   useEffect(() => {
-    /* 
-      TODO: If the session exists and the user is logged in, get the user from the database and 
-      update the user state.
-    */
-
+    if (session && session.user?.name) {
+      getUser(session.user.name).then((fetchedUser) => {
+        setUser(fetchedUser);
+      });
+    }
   }, [session]);
 
   /* 
     When the user clicks submit, create the listing.
   */
   const onCreateListing = async () => {
+    if (!user) return;
 
-    /* 
-      TODO: If the user is not logged in, return.
-    */
+    setLoading(true);
 
-    
-    /*
-      TODO: Set loading to true.
-    */
+    const parsedQuantity = parseInt(quantity);
+    const parsedPrice = parseFloat(listingPrice);
+    if (isNaN(parsedQuantity) || isNaN(parsedPrice)) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
 
+    const newItem = await addNewItem({
+      id: Math.random().toString(36).substring(7),
+      owner: user.username,
+      title: name,
+      description,
+      price: parsedPrice,
+      totalSupply: parsedQuantity,
+      category: category?.value || "",
+      image: url,
+    });
 
-    /* 
-      TODO: Parse the quantity and listing price as an integer and float, respectively. If either is 
-      invalid, set error to true and return.
-    */
-
-
-    /* 
-      TODO: Add the new item to the database. 
-      HINT: Create a new id for the item using Math.random().toString(36).substring(7)
-    */
-
-    /*
-      TODO: Set loading to false and success to true.
-    */
-
-
-    /* 
-      TODO: Clear the form fields.
-    */
-
-
+    setLoading(false);
+    setName("");
+    setDescription("");
+    setListingPrice("");
+    setUrl("");
+    setQuantity("1");
+    setCategory(null);
     /* 
       TODO: Redirect the user to their page with the listings tab selected.
     */
-
   };
 
   /*
@@ -104,7 +100,7 @@ export default function CreateListingModal() {
   if (!user || status === "loading") {
     return <></>;
   }
-  
+
   /* 
     Otherwise, return the following UI:
   */
